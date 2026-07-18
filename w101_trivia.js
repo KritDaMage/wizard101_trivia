@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         W101 Trivia Solver
+// @name         Wizard101: Easier Trivia
 // @namespace    https://github.com/Jan-Fcloud/W101-TriviaAnswers
 // @version      1.0
-// @description  Highlights the correct Wizard101 trivia answer and speeds up the quiz UI (instant answers/next button, click-anywhere-in-box selection)
-// @author       Jan-FCloud & Zalatos
+// @description  Highlights the correct Wizard101 trivia answer and speeds up the quiz UI (instant answers/next button)
+// @author       Jan-FCloud & Zalatos (original), KritDaMage (trivia list expansion & rework)
 // @match        https://www.wizard101.com/quiz/trivia/game*
 // @match        https://www.wizard101.com/game/trivia
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
@@ -23,7 +23,7 @@
         "https://www.wizard101.com/game/trivia"
     ];
 
-    // ---------- Filter Trivia List part ----------
+    // ---------- Filter Trivia List ----------
     // (on the overview pages, replace each category's 2-sample preview with
     // its full quiz list, then move quizzes we have answers for to the front
     // and highlight them)
@@ -66,10 +66,10 @@
         });
     };
 
-    // ---------- Speedy Wizard101 Quiz part ----------
+    // ---------- Speedy Wizard101 Quiz ----------
     // (instant UI, click-anywhere-in-answer-box selection)
 
-    console.debug("W101 Trivia Solver active");
+    console.debug("Wizard101: Easier Trivia active");
 
     // Revise the fadeIn animation so answers appear instantly, and style the
     // answer boxes so the whole box looks/behaves clickable.
@@ -117,7 +117,7 @@
     };
     localStorage.setItem("selectionInProgress", false);
 
-    // ---------- W101 Trivia part ----------
+    // ---------- W101 Trivia ----------
     // (highlights the correct answer on a question page)
 
     let highlightCorrectAnswer = (data) => {
