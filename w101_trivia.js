@@ -5,6 +5,7 @@
 // @description  Highlights the correct Wizard101 trivia answer and speeds up the quiz UI (instant answers/next button, click-anywhere-in-box selection)
 // @author       Jan-FCloud & Zalatos
 // @match        https://www.wizard101.com/quiz/trivia/game*
+// @match        https://www.wizard101.com/game/trivia
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
 // @grant        none
 // @require      https://code.jquery.com/jquery-3.7.1.min.js
@@ -45,7 +46,7 @@
 
     // Override the site's built-in answer-selection function so only one
     // answer in a question can be checked at a time.
-    selectQuizAnswer = function (selectedCheckbox) {
+    window.selectQuizAnswer = function (selectedCheckbox) {
         if (localStorage.getItem("selectionInProgress") === "false") {
             localStorage.setItem("selectionInProgress", true);
             let boxes = document.querySelectorAll(".answerBox");
@@ -65,56 +66,95 @@
     };
     localStorage.setItem("selectionInProgress", false);
 
+    let triviaPages = [
+        "https://www.wizard101.com/quiz/trivia/game/english-trivia",
+        "https://www.wizard101.com/quiz/trivia/game/kingsisle-trivia",
+        "https://www.wizard101.com/quiz/trivia/game/educational-trivia",
+        "https://www.wizard101.com/quiz/trivia/game/fun-trivia",
+        "https://www.wizard101.com/game/trivia"
+    ];
+
+    // ---------- Filter Trivia List part ----------
+    // (on the overview pages, replace each category's 2-sample preview with
+    // its full quiz list, then move quizzes we have answers for to the front
+    // and highlight them)
+
+    let expandTriviaCategories = (data) => {
+        $(".darkerparchment_header").each(function (index, headerElement) {
+            let content = $(headerElement).next(".darkerparchment_content");
+            let viewAllUrl = content.find("p a").attr("href");
+            if (!viewAllUrl) return;
+
+            $.get(viewAllUrl, function (html) {
+                let doc = new DOMParser().parseFromString(html, "text/html");
+                // Keep the enclosing <li> (not just the inner .contentbox) so
+                // its "notake" class survives - that's what drives the site's
+                // own "Take Again Tomorrow!" ribbon and image graying via CSS.
+                let quizBoxes = $(doc).find("article > div.contentbox").closest("li");
+                let container = content.find("td.darkerparchment_pattern");
+                container.empty().append(quizBoxes);
+
+                // Lay quizzes out two per row instead of stacking full-width.
+                quizBoxes.css({
+                    display: "inline-block",
+                    width: "47%",
+                    margin: "0 1% 10px 1%",
+                    "vertical-align": "top"
+                });
+
+                // Quizzes already completed today link to "#" - don't let
+                // that jump/scroll the page.
+                quizBoxes.find('a[href="#"]').on("click", (evt) => evt.preventDefault());
+
+                let answeredBoxes = quizBoxes.filter(function () {
+                    let title = $(this).find(".darkerparchment_header h2").text().replace("Trivia", "").trim();
+                    return !!data[title];
+                });
+
+                answeredBoxes.find(".darkerparchment_header h2").css("color", "green").css("font-weight", "bold");
+                answeredBoxes.prependTo(container);
+            });
+        });
+    };
+
     // ---------- W101 Trivia part ----------
-    // (highlights the correct answer / already-answered quiz titles)
+    // (highlights the correct answer on a question page)
 
-    $.getJSON("https://raw.githubusercontent.com/KritDaMage/wizard101_trivia/main/trivia_answers.json", function (data) {
-        let triviaPages = [
-            "https://www.wizard101.com/quiz/trivia/game/english-trivia",
-            "https://www.wizard101.com/quiz/trivia/game/kingsisle-trivia",
-            "https://www.wizard101.com/quiz/trivia/game/educational-trivia",
-            "https://www.wizard101.com/quiz/trivia/game/fun-trivia",
-            "https://www.wizard101.com/game/trivia"
-        ];
+    let highlightCorrectAnswer = (data) => {
+        let quizTitle = window.location.href.split("https://www.wizard101.com/quiz/trivia/game/")[1];
+        quizTitle = quizTitle.replace(/-/g, " ").replace("trivia", "");
+        quizTitle = quizTitle.replace(/\b\w/g, l => l.toUpperCase()).trim();
 
-        if (triviaPages.includes(window.location.href)) {
-            // Overview page: highlight the titles of quizzes we have answers for.
-            $(".darkerparchment_header").find("td:nth-child(2) h2").each(function (index, element) {
-                let quizTitle = $(element).text().trim();
-                if (data[quizTitle.replace("Trivia", "").trim()]) {
+        let question = $(".quizQuestion").text();
+
+        (data[quizTitle] || []).forEach(qElement => {
+            let matches = qElement[0].toUpperCase() === question.toUpperCase() ||
+                          qElement[0].toUpperCase() === question.toUpperCase() + "?";
+            if (!matches) return;
+
+            $(".answerText").each(function (index, element) {
+                if ($(element).text().trim() === qElement[1].trim()) {
                     $(element).css("color", "green");
                     $(element).css("font-weight", "bold");
+
+                    // Auto-check the checkbox for the highlighted correct answer.
+                    let checkbox = $(element).closest(".answer").find('.largecheckbox').get(0) ||
+                                   $(element).closest(".answer").find('.largecheckboxselected').get(0);
+                    if (checkbox) {
+                        selectQuizAnswer(checkbox);
+                        // Give the selection a moment to settle, then move on.
+                        setTimeout(() => $("#nextQuestion").trigger("click"), 50);
+                    }
                 }
             });
+        });
+    };
+
+    $.getJSON("https://raw.githubusercontent.com/KritDaMage/wizard101_trivia/main/trivia_answers.json", function (data) {
+        if (triviaPages.includes(window.location.href)) {
+            expandTriviaCategories(data);
         } else {
-            // Question page: find the current question and highlight its correct answer.
-            let quizTitle = window.location.href.split("https://www.wizard101.com/quiz/trivia/game/")[1];
-            quizTitle = quizTitle.replace(/-/g, " ").replace("trivia", "");
-            quizTitle = quizTitle.replace(/\b\w/g, l => l.toUpperCase()).trim();
-
-            let question = $(".quizQuestion").text();
-
-            (data[quizTitle] || []).forEach(qElement => {
-                let matches = qElement[0].toUpperCase() === question.toUpperCase() ||
-                              qElement[0].toUpperCase() === question.toUpperCase() + "?";
-                if (!matches) return;
-
-                $(".answerText").each(function (index, element) {
-                    if ($(element).text().trim() === qElement[1].trim()) {
-                        $(element).css("color", "green");
-                        $(element).css("font-weight", "bold");
-
-                        // Auto-check the checkbox for the highlighted correct answer.
-                        let checkbox = $(element).closest(".answer").find('.largecheckbox').get(0) ||
-                                       $(element).closest(".answer").find('.largecheckboxselected').get(0);
-                        if (checkbox) {
-                            selectQuizAnswer(checkbox);
-                            // Give the selection a moment to settle, then move on.
-                            setTimeout(() => $("#nextQuestion").trigger("click"), 50);
-                        }
-                    }
-                });
-            });
+            highlightCorrectAnswer(data);
         }
     });
 })();
