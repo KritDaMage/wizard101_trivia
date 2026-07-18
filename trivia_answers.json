@@ -521,6 +521,22 @@
         [
             "\"Not all those who wander are lost.\"",
             "The Lord of the Rings"
+        ],
+        [
+            "\"I wanted you to see what real courage is, instead of getting the idea that courage is a man with a gun in his hand. It's when you know you're licked before you begin but you begin anyway and you see it through no matter what.\"",
+            "To Kill a Mockingbird"
+        ],
+        [
+            "\"All animals are equal, but some animals are more equal than others.\"",
+            "Animal Farm"
+        ],
+        [
+            "\"All grown-ups were once children - but only few of them remember it.\"",
+            "The Little Prince"
+        ],
+        [
+            "\"Most people were heartless about turtles because a turtle's heart will beat for hours after it has been cut up and butchered. But the old man thought, I have such a heart too.\"",
+            "The Old Man and the Sea"
         ]
     ],
     "Chemical Elements": [
@@ -957,6 +973,10 @@
         [
             "What is the apostrophe's main function?",
             "Show ownership or posession"
+        ],
+        [
+            "Which sentence correctly uses an apostrophe?",
+            "I can't do it, because it is too hard."
         ]
     ],
     "Famous Authors": [

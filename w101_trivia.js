@@ -3,7 +3,7 @@
 // @namespace    https://github.com/Jan-Fcloud/W101-TriviaAnswers
 // @version      1.0
 // @description  Highlights the correct Wizard101 trivia answer and speeds up the quiz UI (instant answers/next button)
-// @author       Jan-FCloud & Zalatos (original), KritDaMage (trivia list expansion & rework)
+// @author       Jan-FCloud & Zalatos (original), KritDaMage (trivia lists & rework)
 // @match        https://www.wizard101.com/quiz/trivia/game*
 // @match        https://www.wizard101.com/game/trivia
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=tampermonkey.net
