@@ -15,57 +15,6 @@
 (function () {
     'use strict';
 
-    // ---------- Speedy Wizard101 Quiz part ----------
-    // (instant UI, click-anywhere-in-answer-box selection)
-
-    console.debug("W101 Trivia Solver active");
-
-    // Revise the fadeIn animation so answers appear instantly, and style the
-    // answer boxes so the whole box looks/behaves clickable.
-    let styleEle = document.createElement("style");
-    styleEle.innerHTML =
-        ".fadeIn { animation: fadeIn 0s ease-out !important }" +
-        " div.answer.fadeIn:hover { background-color: #bb9461; color: #000; }" +
-        " div.answer.fadeIn { cursor: pointer; border-radius: 5px; margin:auto; padding: 10px 0 10px 25px }";
-    document.getElementsByTagName("head")[0].appendChild(styleEle);
-
-    let quizEnhancer = () => {
-        // Show answers and buttons immediately instead of waiting on the fade-in.
-        jQuery(".answer").css("visibility", "visible").addClass("fadeIn");
-        jQuery("button").css("visibility", "visible");
-        jQuery("#nextQuestion").addClass("kiaccountsbuttongreen");
-
-        // Make clicking anywhere in the answer box select it, not just the checkbox.
-        jQuery(".answer").click((evt) => {
-            let link = jQuery(evt.currentTarget).find('.largecheckbox').get(0) ||
-                       jQuery(evt.currentTarget).find('.largecheckboxselected').get(0);
-            selectQuizAnswer(link);
-        });
-    };
-    jQuery(quizEnhancer);
-
-    // Override the site's built-in answer-selection function so only one
-    // answer in a question can be checked at a time.
-    window.selectQuizAnswer = function (selectedCheckbox) {
-        if (localStorage.getItem("selectionInProgress") === "false") {
-            localStorage.setItem("selectionInProgress", true);
-            let boxes = document.querySelectorAll(".answerBox");
-            for (let i = 0; i < boxes.length; i++) {
-                if (boxes[i].children[0] === selectedCheckbox) {
-                    boxes[i].children[0].className = "largecheckboxselected";
-                    boxes[i].children[1].checked = "checked";
-                } else {
-                    boxes[i].children[0].className = "largecheckbox";
-                    boxes[i].children[1].checked = "";
-                }
-            }
-            // Delay the reset so the checkbox's own click handler (which fires
-            // right after this) doesn't re-enter and double-toggle the state.
-            setTimeout(() => { localStorage.setItem("selectionInProgress", false); }, 10);
-        }
-    };
-    localStorage.setItem("selectionInProgress", false);
-
     let triviaPages = [
         "https://www.wizard101.com/quiz/trivia/game/english-trivia",
         "https://www.wizard101.com/quiz/trivia/game/kingsisle-trivia",
@@ -116,6 +65,57 @@
             });
         });
     };
+
+    // ---------- Speedy Wizard101 Quiz part ----------
+    // (instant UI, click-anywhere-in-answer-box selection)
+
+    console.debug("W101 Trivia Solver active");
+
+    // Revise the fadeIn animation so answers appear instantly, and style the
+    // answer boxes so the whole box looks/behaves clickable.
+    let styleEle = document.createElement("style");
+    styleEle.innerHTML =
+        ".fadeIn { animation: fadeIn 0s ease-out !important }" +
+        " div.answer.fadeIn:hover { background-color: #bb9461; color: #000; }" +
+        " div.answer.fadeIn { cursor: pointer; border-radius: 5px; margin:auto; padding: 10px 0 10px 25px }";
+    document.getElementsByTagName("head")[0].appendChild(styleEle);
+
+    let quizEnhancer = () => {
+        // Show answers and buttons immediately instead of waiting on the fade-in.
+        jQuery(".answer").css("visibility", "visible").addClass("fadeIn");
+        jQuery("button").css("visibility", "visible");
+        jQuery("#nextQuestion").addClass("kiaccountsbuttongreen");
+
+        // Make clicking anywhere in the answer box select it, not just the checkbox.
+        jQuery(".answer").click((evt) => {
+            let link = jQuery(evt.currentTarget).find('.largecheckbox').get(0) ||
+                       jQuery(evt.currentTarget).find('.largecheckboxselected').get(0);
+            selectQuizAnswer(link);
+        });
+    };
+    jQuery(quizEnhancer);
+
+    // Override the site's built-in answer-selection function so only one
+    // answer in a question can be checked at a time.
+    window.selectQuizAnswer = function (selectedCheckbox) {
+        if (localStorage.getItem("selectionInProgress") === "false") {
+            localStorage.setItem("selectionInProgress", true);
+            let boxes = document.querySelectorAll(".answerBox");
+            for (let i = 0; i < boxes.length; i++) {
+                if (boxes[i].children[0] === selectedCheckbox) {
+                    boxes[i].children[0].className = "largecheckboxselected";
+                    boxes[i].children[1].checked = "checked";
+                } else {
+                    boxes[i].children[0].className = "largecheckbox";
+                    boxes[i].children[1].checked = "";
+                }
+            }
+            // Delay the reset so the checkbox's own click handler (which fires
+            // right after this) doesn't re-enter and double-toggle the state.
+            setTimeout(() => { localStorage.setItem("selectionInProgress", false); }, 10);
+        }
+    };
+    localStorage.setItem("selectionInProgress", false);
 
     // ---------- W101 Trivia part ----------
     // (highlights the correct answer on a question page)
